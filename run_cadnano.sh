@@ -54,21 +54,41 @@ setup_macos_x11() {
         sleep 3
     fi
     
-    # Allow X11 connections from localhost and Docker
-    print_status "Configuring X11 permissions..."
-    xhost +localhost
-    xhost +127.0.0.1
+    # Set DISPLAY variable with hostname for TCP connections BEFORE xhost commands
+    export DISPLAY=$(hostname):0
     
-    # Set DISPLAY variable
-    export DISPLAY=:0
+    # Verify DISPLAY variable is set
+    if [ -z "$DISPLAY" ]; then
+        print_error "Failed to set DISPLAY variable"
+        exit 1
+    fi
+    print_status "DISPLAY set to: $DISPLAY"
     
     # Create Xauthority file if it doesn't exist
     if [ ! -f ~/.Xauthority ]; then
         touch ~/.Xauthority
     fi
     
-    # Set XAUTHORITY environment variable
+    # Set XAUTHORITY environment variable BEFORE xhost commands
     export XAUTHORITY=~/.Xauthority
+    
+    # Verify XAUTHORITY variable is set
+    if [ -z "$XAUTHORITY" ]; then
+        print_error "Failed to set XAUTHORITY variable"
+        exit 1
+    fi
+    print_status "XAUTHORITY set to: $XAUTHORITY"
+    
+    # Allow X11 connections from localhost and Docker
+    print_status "Configuring X11 permissions..."
+    if ! xhost +localhost; then
+        print_error "Failed to allow X11 connections from localhost"
+        exit 1
+    fi
+    if ! xhost +127.0.0.1; then
+        print_error "Failed to allow X11 connections from 127.0.0.1"
+        exit 1
+    fi
     
     print_status "macOS X11 forwarding configured successfully"
 }
@@ -82,7 +102,7 @@ setup_linux_x11() {
     
     # Set DISPLAY variable if not already set
     if [ -z "$DISPLAY" ]; then
-        export DISPLAY=:0
+        export DISPLAY=$(hostname):0
     fi
     
     # Create Xauthority file if it doesn't exist
@@ -110,6 +130,28 @@ run_container() {
     # Create data directories if they don't exist
     mkdir -p ./cadnano_data ./cadnano_projects
     
+    # Ensure X11 environment variables are properly set for docker-compose
+    if [ -z "$DISPLAY" ]; then
+        export DISPLAY=$(hostname):0
+        print_status "DISPLAY variable set to: $DISPLAY"
+    else
+        print_status "DISPLAY variable already set to: $DISPLAY"
+    fi
+    
+    if [ -z "$XAUTHORITY" ]; then
+        export XAUTHORITY=~/.Xauthority
+        print_status "XAUTHORITY variable set to: $XAUTHORITY"
+    else
+        print_status "XAUTHORITY variable already set to: $XAUTHORITY"
+    fi
+    
+    # Verify critical environment variables before running docker-compose
+    if [ -z "$DISPLAY" ] || [ -z "$XAUTHORITY" ]; then
+        print_error "Critical X11 environment variables are not set properly"
+        exit 1
+    fi
+    
+    print_status "Environment variables verified, starting container..."
     # Run the container
     docker-compose up
 }

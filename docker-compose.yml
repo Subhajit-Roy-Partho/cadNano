@@ -3,12 +3,15 @@ services:
     image: subhajitroy/cadnano:latest
     container_name: cadnano2-gui
     environment:
-      - DISPLAY=host.docker.internal:0
+      - DISPLAY=${DISPLAY:-:0}
       - QT_X11_NO_MITSHM=1
       - QT_QPA_PLATFORM=xcb
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
+      # X11 forwarding for GUI support
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${XAUTHORITY:-~/.Xauthority}:/home/cadnano/.Xauthority:ro
       # Data persistence
       - cadnano_data:/home/cadnano/data
       - cadnano_projects:/home/cadnano/projects
