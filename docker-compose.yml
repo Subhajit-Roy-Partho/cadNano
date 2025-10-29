@@ -1,0 +1,23 @@
+services:
+  cadnano2:
+    build: .
+    container_name: cadnano2-gui
+    environment:
+      - DISPLAY=host.docker.internal:0
+      - QT_X11_NO_MITSHM=1
+      - QT_QPA_PLATFORM=xcb
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Data persistence
+      - cadnano_data:/home/cadnano/data
+      - cadnano_projects:/home/cadnano/projects
+    stdin_open: true
+    tty: true
+    command: /home/cadnano/start_cadnano.sh
+
+volumes:
+  cadnano_data:
+    driver: local
+  cadnano_projects:
+    driver: local
