@@ -2,6 +2,10 @@
 
 This project provides a Docker container setup for running Cadnano2 v2.2.0 with GUI support on both macOS and Linux systems. The Docker image is now available on Docker Hub as `subhajitroy/cadnano`.
 
+## Known Problems
+
+The cadnano gui might face issues with saving the files inside the data folder. Change the folder to `chmod 777 folderName` to allow edit by any user. The cadnano is inside docker with different permission set.
+
 ## Overview
 
 Cadnano2 is a software tool for designing DNA origami structures. This Docker setup includes:

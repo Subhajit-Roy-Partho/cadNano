@@ -10,13 +10,14 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       # X11 forwarding for GUI support
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-~/.Xauthority}:/home/cadnano/.Xauthority:ro
       # Data persistence
-      - ./cadnano_data:/home/cadnano/data
-      - ./cadnano_projects:/home/cadnano/projects
+      - ./cadnano_data:/home/cadnano/data:Z
+      - ./cadnano_projects:/home/cadnano/projects:Z
     stdin_open: true
     tty: true
+    network_mode: host
     command: /home/cadnano/start_cadnano.sh
 
 volumes:

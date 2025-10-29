@@ -63,14 +63,14 @@ setup_macos_x11() {
         exit 1
     fi
     print_status "DISPLAY set to: $DISPLAY"
-    
-    # Create Xauthority file if it doesn't exist
-    if [ ! -f ~/.Xauthority ]; then
-        touch ~/.Xauthority
-    fi
-    
+
     # Set XAUTHORITY environment variable BEFORE xhost commands
     export XAUTHORITY=~/.Xauthority
+
+    # Create Xauthority file if it doesn't exist
+    if [ ! -f "$XAUTHORITY" ]; then
+        touch "$XAUTHORITY" 2>/dev/null || print_warning "Could not create .Xauthority file, it may already exist"
+    fi
     
     # Verify XAUTHORITY variable is set
     if [ -z "$XAUTHORITY" ]; then
@@ -96,24 +96,51 @@ setup_macos_x11() {
 # Setup X11 forwarding for Linux
 setup_linux_x11() {
     print_status "Setting up X11 forwarding for Linux..."
-    
+
+    # Check if X11 is running
+    if ! command -v xhost &> /dev/null; then
+        print_error "X11 is not available on this system"
+        print_error "Please ensure you have X11/X Server installed and running"
+        exit 1
+    fi
+
     # Allow X11 connections from local host
-    xhost +local:docker
-    
+    if ! xhost +local:docker 2>/dev/null; then
+        print_warning "Could not add docker to X11 access control list"
+    fi
+
     # Set DISPLAY variable if not already set
     if [ -z "$DISPLAY" ]; then
-        export DISPLAY=$(hostname):0
+        # Try to find the correct DISPLAY
+        if [ -S /tmp/.X11-unix/0 ]; then
+            export DISPLAY=:0
+        elif [ -S /tmp/.X11-unix/1 ]; then
+            export DISPLAY=:1
+        else
+            print_error "Could not find X11 socket. X server might not be running."
+            exit 1
+        fi
     fi
-    
-    # Create Xauthority file if it doesn't exist
-    if [ ! -f ~/.Xauthority ]; then
-        touch ~/.Xauthority
+
+    # Verify X11 socket exists
+    DISPLAY_NUM=${DISPLAY##*:}
+    DISPLAY_NUM=${DISPLAY_NUM%.*}
+    if [ ! -S "/tmp/.X11-unix/$DISPLAY_NUM" ]; then
+        print_warning "X11 socket not found at /tmp/.X11-unix/$DISPLAY_NUM"
+        print_warning "Attempting to use DISPLAY=$DISPLAY anyway..."
     fi
-    
+
     # Set XAUTHORITY environment variable
     export XAUTHORITY=~/.Xauthority
-    
+
+    # Create Xauthority file if it doesn't exist
+    if [ ! -f "$XAUTHORITY" ]; then
+        touch "$XAUTHORITY" 2>/dev/null || print_warning "Could not create .Xauthority file, it may already exist"
+    fi
+
     print_status "Linux X11 forwarding configured successfully"
+    print_status "DISPLAY set to: $DISPLAY"
+    print_status "XAUTHORITY set to: $XAUTHORITY"
 }
 
 # Pull Docker image
