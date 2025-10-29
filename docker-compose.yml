@@ -1,6 +1,6 @@
 services:
   cadnano2:
-    build: .
+    image: subhajitroy/cadnano:latest
     container_name: cadnano2-gui
     environment:
       - DISPLAY=host.docker.internal:0

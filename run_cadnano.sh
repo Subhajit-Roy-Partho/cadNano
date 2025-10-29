@@ -96,11 +96,11 @@ setup_linux_x11() {
     print_status "Linux X11 forwarding configured successfully"
 }
 
-# Build Docker image
-build_image() {
-    print_status "Building Cadnano2 Docker image..."
-    docker-compose build
-    print_status "Docker image built successfully"
+# Pull Docker image
+pull_image() {
+    print_status "Pulling Cadnano2 Docker image from Docker Hub..."
+    docker-compose pull
+    print_status "Docker image pulled successfully"
 }
 
 # Run Cadnano2 container
@@ -128,7 +128,7 @@ show_help() {
     echo "Usage: $0 [COMMAND]"
     echo ""
     echo "Commands:"
-    echo "  build     Build the Docker image"
+    echo "  pull      Pull the Docker image from Docker Hub"
     echo "  run       Run Cadnano2 with GUI support"
     echo "  stop      Stop the running container"
     echo "  setup     Setup X11 forwarding for your platform"
@@ -136,7 +136,7 @@ show_help() {
     echo ""
     echo "Examples:"
     echo "  $0 setup    # Setup X11 forwarding"
-    echo "  $0 build    # Build the Docker image"
+    echo "  $0 pull     # Pull the Docker image from Docker Hub"
     echo "  $0 run      # Run Cadnano2"
     echo ""
     echo "Platform-specific notes:"
@@ -162,8 +162,8 @@ main() {
                     ;;
             esac
             ;;
-        "build")
-            build_image
+        "pull")
+            pull_image
             ;;
         "run")
             OS=$(detect_os)

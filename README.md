@@ -1,6 +1,6 @@
 # Cadnano2 Docker with GUI Support
 
-This project provides a Docker container setup for running Cadnano2 v2.2.0 with GUI support on both macOS and Linux systems.
+This project provides a Docker container setup for running Cadnano2 v2.2.0 with GUI support on both macOS and Linux systems. The Docker image is now available on Docker Hub as `subhajitroy/cadnano`.
 
 ## Overview
 
@@ -11,15 +11,7 @@ Cadnano2 is a software tool for designing DNA origami structures. This Docker se
 - Cadnano2 v2.2.0 pre-installed
 - Non-root user for security
 - Persistent data volumes
-
-## About This Repository
-
-This repository was created to provide a comprehensive Docker-based solution for running Cadnano2 on modern systems. The original Cadnano2 project requires legacy dependencies that can be challenging to install on current operating systems. This Docker setup addresses those challenges by:
-
-1. Containerizing all dependencies in an isolated environment
-2. Providing cross-platform compatibility (Linux and macOS)
-3. Simplifying the installation and setup process
-4. Ensuring reproducible builds and consistent behavior
+- Pre-built Docker image available on Docker Hub
 
 ## Prerequisites
 
@@ -36,79 +28,6 @@ This repository was created to provide a comprehensive Docker-based solution for
 ### Linux Specific Requirements
 - X11 server running (default on most Linux desktop environments)
 
-## Installation Guide
-
-### Step 1: Clone This Repository
-
-```bash
-git clone git@github.com:Subhajit-Roy-Partho/cadNano.git
-cd cadNano
-```
-
-### Step 2: Install Docker and Docker Compose
-
-#### For macOS:
-1. Install [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/)
-2. Follow the installation instructions and start Docker Desktop
-
-#### For Linux (Ubuntu/Debian):
-```bash
-# Update package index
-sudo apt-get update
-
-# Install Docker
-sudo apt-get install docker.io docker-compose
-
-# Add your user to the docker group
-sudo usermod -aG docker $USER
-
-# Log out and log back in to apply group changes
-```
-
-#### For Linux (Other distributions):
-Follow the official Docker installation guide for your distribution: [Docker Installation Guide](https://docs.docker.com/install/)
-
-### Step 3: Install XQuartz (macOS only)
-
-```bash
-# Using Homebrew
-brew install --cask xquartz
-
-# Start XQuartz
-open -a XQuartz
-```
-
-### Step 4: Setup X11 Forwarding
-
-#### For macOS:
-1. Start XQuartz if not already running:
-   ```bash
-   open -a XQuartz
-   ```
-
-2. Allow X11 connections:
-   ```bash
-   xhost +localhost
-   ```
-
-3. Set environment variables:
-   ```bash
-   export DISPLAY=:0
-   export XAUTHORITY=~/.Xauthority
-   ```
-
-#### For Linux:
-1. Allow X11 connections from Docker:
-   ```bash
-   xhost +local:docker
-   ```
-
-2. Set environment variables:
-   ```bash
-   export DISPLAY=${DISPLAY:-:0}
-   export XAUTHORITY=${XAUTHORITY:-~/.Xauthority}
-   ```
-
 ## Quick Start
 
 1. Clone or download this repository
@@ -116,29 +35,56 @@ open -a XQuartz
    ```bash
    ./run_cadnano.sh setup
    ```
-3. Build the Docker image:
+3. Pull the Docker image from Docker Hub:
    ```bash
-   ./run_cadnano.sh build
+   ./run_cadnano.sh pull
    ```
 4. Run Cadnano2:
    ```bash
    ./run_cadnano.sh run
    ```
 
-## Detailed Instructions
+### Alternative: Direct Docker Hub Usage
 
-### Building the Docker Image
-
-To build the Cadnano2 Docker image manually:
+You can also run Cadnano2 directly from Docker Hub without cloning this repository:
 
 ```bash
-docker-compose build
+# Setup X11 forwarding (see platform-specific instructions below)
+./run_cadnano.sh setup
+
+# Run directly from Docker Hub
+docker run -it --rm \
+  -e DISPLAY=host.docker.internal:0 \
+  -e QT_X11_NO_MITSHM=1 \
+  -e QT_QPA_PLATFORM=xcb \
+  --add-host "host.docker.internal:host-gateway" \
+  -v $(pwd)/cadnano_data:/home/cadnano/data \
+  -v $(pwd)/cadnano_projects:/home/cadnano/projects \
+  subhajitroy/cadnano:latest
+```
+
+## Detailed Instructions
+
+### Pulling the Docker Image
+
+To pull the Cadnano2 Docker image from Docker Hub manually:
+
+```bash
+docker pull subhajitroy/cadnano:latest
 ```
 
 Or using the provided script:
 
 ```bash
-./run_cadnano.sh build
+./run_cadnano.sh pull
+```
+
+### Building from Source (Optional)
+
+If you want to build the image from source instead of using the pre-built Docker Hub image:
+
+```bash
+docker-compose build
 ```
 
 ### Running Cadnano2
@@ -150,6 +96,9 @@ The `run_cadnano.sh` script handles platform-specific setup automatically:
 ```bash
 # Setup X11 forwarding for your platform
 ./run_cadnano.sh setup
+
+# Pull the image from Docker Hub
+./run_cadnano.sh pull
 
 # Run Cadnano2
 ./run_cadnano.sh run
@@ -351,20 +300,32 @@ docker-compose exec cadnano2 /bin/bash
 - Python: 2.7
 - PyQt4: Latest
 - Ubuntu: 18.04
+- Docker Image: `subhajitroy/cadnano:latest` and `subhajitroy/cadnano:v2.2.0`
 
-## Credits and References
+## Docker Hub
 
-### Original Cadnano Project
-- **Official Repository**: [Cadnano2 GitHub Repository](https://github.com/cadnano/cadnano2)
-- **Original Developers**: The Cadnano development team
-- **License**: Please refer to the [Cadnano2 license](https://github.com/cadnano/cadnano2/blob/master/LICENSE)
+The pre-built Docker image is available on Docker Hub:
+- Repository: [subhajitroy/cadnano](https://hub.docker.com/r/subhajitroy/cadnano)
+- Tags: `latest`, `v2.2.0`
 
-### This Docker Setup
-This Docker-based solution was created to address the challenges of running Cadnano2 on modern systems. It provides:
-- Cross-platform compatibility
-- Simplified installation process
-- Isolated environment with all dependencies
-- Persistent data storage
+You can pull and run the image directly:
+```bash
+docker pull subhajitroy/cadnano:latest
+docker run -it --rm subhajitroy/cadnano:latest
+```
+- Docker Image: `subhajitroy/cadnano:latest` and `subhajitroy/cadnano:v2.2.0`
+
+## Docker Hub
+
+The pre-built Docker image is available on Docker Hub:
+- Repository: [subhajitroy/cadnano](https://hub.docker.com/r/subhajitroy/cadnano)
+- Tags: `latest`, `v2.2.0`
+
+You can pull and run the image directly:
+```bash
+docker pull subhajitroy/cadnano:latest
+docker run -it --rm subhajitroy/cadnano:latest
+```
 
 ## Support
 
@@ -372,15 +333,6 @@ For issues related to:
 - Cadnano2 functionality: [Cadnano2 GitHub Repository](https://github.com/cadnano/cadnano2)
 - Docker setup: Create an issue in this repository
 - X11 forwarding: Consult your platform's documentation
-
-## Contributing
-
-Contributions to this Docker setup are welcome! Please:
-1. Fork this repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly on both Linux and macOS
-5. Submit a pull request
 
 ## License
 
